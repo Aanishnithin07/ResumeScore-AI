@@ -15,12 +15,32 @@ from collections import Counter
 import numpy as np
 
 # Download required NLTK data
-try:
-    nltk.download('punkt', quiet=True)
-    nltk.download('stopwords', quiet=True)
-    nltk.download('wordnet', quiet=True)
-except:
-    pass
+import os
+
+def ensure_nltk_data():
+    """Ensure NLTK data is downloaded"""
+    try:
+        # Try to download NLTK data
+        import nltk
+        nltk.download('punkt', quiet=True)
+        nltk.download('stopwords', quiet=True) 
+        nltk.download('wordnet', quiet=True)
+        print("NLTK data downloaded successfully")
+        return True
+    except Exception as e:
+        print(f"Warning: Could not download NLTK data: {e}")
+        # Try alternative approach
+        try:
+            import nltk.data
+            nltk.data.find('tokenizers/punkt')
+            print("NLTK punkt tokenizer found")
+            return True
+        except LookupError:
+            print("Warning: NLTK punkt tokenizer not available")
+            return False
+
+# Download NLTK data on startup
+ensure_nltk_data()
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -49,14 +69,37 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
-try:
-    stop_words = set(stopwords.words('english'))
-    lemmatizer = WordNetLemmatizer()
-except LookupError:
-    nltk.download('stopwords', quiet=True)
-    nltk.download('wordnet', quiet=True)
-    stop_words = set(stopwords.words('english'))
-    lemmatizer = WordNetLemmatizer()
+# Initialize NLTK components with error handling
+stop_words = set()
+lemmatizer = None
+
+def init_nltk_components():
+    """Initialize NLTK components with proper error handling"""
+    global stop_words, lemmatizer
+    try:
+        stop_words = set(stopwords.words('english'))
+        lemmatizer = WordNetLemmatizer()
+        print("NLTK components initialized successfully")
+    except LookupError as e:
+        print(f"LookupError: {e}. Attempting to download missing data...")
+        try:
+            nltk.download('stopwords', quiet=True)
+            nltk.download('wordnet', quiet=True)
+            stop_words = set(stopwords.words('english'))
+            lemmatizer = WordNetLemmatizer()
+            print("NLTK components initialized after download")
+        except Exception as retry_e:
+            print(f"Failed to initialize NLTK components: {retry_e}")
+            # Fallback to basic stopwords
+            stop_words = set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'])
+            lemmatizer = None
+    except Exception as e:
+        print(f"Unexpected error initializing NLTK: {e}")
+        stop_words = set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'])
+        lemmatizer = None
+
+# Initialize components
+init_nltk_components()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -399,14 +442,27 @@ async def analyze_resume_file(file: UploadFile = File(...)):
 async def health_check():
     """Detailed health check"""
     try:
-        # Test NLTK tokenizer
-        test_tokens = word_tokenize("This is a test sentence.")
+        # Test NLTK tokenizer with fallback
+        nltk_status = "unknown"
+        try:
+            test_tokens = word_tokenize("This is a test sentence.")
+            nltk_status = "loaded" if test_tokens else "error"
+        except Exception as nltk_e:
+            nltk_status = f"error: {str(nltk_e)}"
+        
+        # Test textstat
+        textstat_status = "available"
+        try:
+            textstat.flesch_reading_ease("test")
+        except Exception:
+            textstat_status = "error"
         
         return {
             "status": "healthy",
-            "nltk_tokenizer": "loaded",
-            "textstat": "available", 
-            "version": "1.0.0"
+            "nltk_tokenizer": nltk_status,
+            "textstat": textstat_status,
+            "version": "1.0.0",
+            "port": os.environ.get("PORT", "8000")
         }
     except Exception as e:
         return JSONResponse(
