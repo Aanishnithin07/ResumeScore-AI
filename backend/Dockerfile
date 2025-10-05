@@ -6,14 +6,16 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download spaCy model
-RUN python -m spacy download en_core_web_sm
+# Download NLTK data (lightweight alternative to spaCy)
+RUN python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('stopwords', quiet=True); nltk.download('wordnet', quiet=True)" || echo "NLTK data will be downloaded at runtime"
 
 # Copy application code
 COPY . .
@@ -25,5 +27,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application (Railway uses PORT environment variable)
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
