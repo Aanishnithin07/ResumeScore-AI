@@ -30,5 +30,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# Run the application using startup script
-CMD ["./start.sh"]
+# Run the application directly with Python
+CMD ["python", "main.py"]
