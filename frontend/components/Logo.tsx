@@ -27,7 +27,7 @@ export default function Logo({ size = 'md', showText = true, className = '' }: L
       {/* Logo Icon */}
       <div className="flex-shrink-0">
         <Image
-          src="/images/favicon_io (1)/favicon-32x32.png"
+          src="/favicon-32x32.png"
           alt="ResumeScore Logo"
           width={sizes[size].icon}
           height={sizes[size].icon}
