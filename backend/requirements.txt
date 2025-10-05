@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+nltk
+textstat
+python-docx
+PyPDF2
+numpy
+pandas
