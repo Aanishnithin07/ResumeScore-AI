@@ -35,6 +35,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://resumescore-525o5gi4s-aanishnithin07-2516s-projects.vercel.app",
+        "https://resumescore-b2920c58j-aanishnithin07-2516s-projects.vercel.app",
         "https://*.vercel.app",
         "*"  # Allow all for now, restrict in production
     ],
