@@ -22,6 +22,7 @@ It provides the complete score of your resume under various aspects!
 - **Framer Motion** - Smooth animations and transitions
 - **Radix UI** - Accessible UI components
 - **Axios** - HTTP client for API communication
+  ----------------------------------------------
 
 ### Backend
 - **FastAPI** - High-performance Python web framework
