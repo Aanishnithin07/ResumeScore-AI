@@ -1,6 +1,7 @@
-# ResumeScore 🚀
+# ResumeScore AI
 
 A complete, production-ready full-stack website for AI-powered resume analysis with a beautiful new-retro aesthetic.
+It provides the complete score of your resume under various aspects!
 
 ## 🌟 Features
 
